@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octra Wallet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="F233rHsgYE.css">
+</head>
+<body>
+<div class="app-wrapper">
+    <div>
+        <marquee>Powered by 𝕀NPO 𝔸IRDROP ℂRYPTO - Not Official Wallet</marquee>
+    </div>
+    <div id="screen-setup" class="screen active">
+    <div class="setup-header">
+        <i class="fa-solid fa-wallet" style="font-size: 40px; color: #87ceeb; margin-bottom: 15px;"></i>
+        <h1>Octra Wallet</h1>
+        <p>Your Gateway to the Octra Devnet</p>
+    </div>
+    <div class="setup-actions">
+        <input type="password" id="wallet-password" placeholder="Set Wallet Password (for encryption)">
+        <div id="setup-msg"></div>
+        <br>
+        <button onclick="createWallet()" class="btn-primary">Create New Wallet</button>
+        <div class="divider"><span>OR</span></div>
+        <input type="text" id="import-mnemonic" placeholder="Enter 12-word mnemonic phrase">
+        <button onclick="importWallet()" class="btn-secondary">Import Wallet</button>
+    </div>
+</div>
+
+<div id="tx-confirmation-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h3>Confirm Transaction</h3>
+        <div class="box-info">
+            <p><strong>To:</strong> <span id="conf-to"></span></p>
+            <p><strong>Amount:</strong> <span id="conf-amount"></span> OCT</p>
+            <p><strong>Fee:</strong> <span id="conf-fee"></span> OCT</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+            <button class="btn-primary" onclick="executeSend()">Send Now</button>
+        </div>
+    </div>
+</div>
+
+    <div id="screen-dashboard" class="screen">
+        <div class="top-bar">
+            <div class="network-badge"><span class="dot"></span> Octra Devnet</div>
+            <i class="fa-solid fa-qrcode" onclick="showScreen('screen-receive')"></i>
+        </div>
+        <div class="balance-card">
+            <p class="balance-label">Total Balance</p>
+            <h1 class="balance-amount"><span id="ui-balance">0.00</span> <span style="font-size: 16px; color: #888;">OCT</span></h1>
+            <p class="address-badge" onclick="copyAddress()">
+                <span id="ui-addr-short">Loading...</span> <i class="fa-regular fa-copy"></i>
+            </p>
+            <div id="copy-msg" class="msg-toast hidden">Copied!</div>
+        </div>
+        <div class="action-row">
+            <div class="action-btn" onclick="showScreen('screen-send')">
+                <div class="icon-circle"><i class="fa-solid fa-arrow-up"></i></div>
+                <span>Send</span>
+            </div>
+            <div class="action-btn" onclick="showScreen('screen-receive')">
+                <div class="icon-circle"><i class="fa-solid fa-arrow-down"></i></div>
+                <span>Receive</span>
+            </div>
+            <div class="action-btn" onclick="requestFaucet()">
+                <div class="icon-circle"><i class="fa-solid fa-faucet-drip"></i></div>
+                <span>Faucet</span>
+            </div>
+            <div class="action-btn" onclick="refreshData()">
+                <div class="icon-circle"><i class="fa-solid fa-rotate-right"></i></div>
+                <span>Refresh</span>
+            </div>
+        </div>
+        <div class="asset-list">
+            <h3>Assets</h3>
+            <div class="asset-item">
+                <div class="asset-left">
+                    <div class="asset-icon"><i class="fa-solid fa-coins"></i></div>
+                    <div class="asset-info">
+                        <strong>OCT</strong>
+                        <span>Octra Coin Native</span>
+                    </div>
+                </div>
+                <div class="asset-right">
+                    <strong id="asset-balance">0.00</strong>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showScreen('screen-dashboard')">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Wallet</span>
+            </div>
+            <div class="nav-item" onclick="showScreen('screen-history')">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>History</span>
+            </div>
+            <div class="nav-item" onclick="showScreen('screen-settings')">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-send" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Send OCT</h2>
+            <div style="width: 20px;"></div>
+        </div>
+        <div id="reader" style="width: 100%; display: none; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 2px solid #87ceeb;"></div>
+        <div class="form-group">
+            <label>Recipient Address</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="send-to" placeholder="oct...">
+                <button class="btn-secondary" style="width: auto; padding: 0 15px; margin-top: 8px;" onclick="startQRScanner()">
+                    <i class="fa-solid fa-qrcode" style="color: #87ceeb;"></i>
+                </button>
+            </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 5px;">
+            <label>Amount (OCT)</label>
+            <input type="number" id="send-amount" placeholder="0.00" step="0.000001" oninput="updateGasFee()">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px;">
+                <span style="color: #888;">Available: <span id="send-avail" style="color: #fff;">0.00</span> OCT</span>
+                <span style="color: #888;">TX Fee Estimation: <span id="send-fee" style="color: #f1c40f;">0.01</span> OCT</span>
+            </div>
+        </div>
+        <button onclick="sendTransaction()" class="btn-primary" style="margin-top: 20px;">Confirm Send</button>
+        <div id="tx-msg"></div>
+    </div>
+
+    <div id="screen-history" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Transactions</h2>
+            <div style="width: 20px;"></div> 
+        </div>
+        <div id="history-list" class="asset-list" style="margin-top: 10px;">
+        </div>
+    </div>
+
+    <div id="screen-receive" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Receive OCT</h2>
+            <div style="width: 20px;"></div>
+        </div>
+        <div class="receive-card">
+            <div id="qrcode-container" style="background: #fff; padding: 15px; border-radius: 10px; display: inline-block; margin: 0 auto;"></div>
+            <p style="margin-top: 20px; font-size: 14px; color: #888;">Scan address to receive payment</p>
+            <div class="address-box">
+                <p id="full-address" style="word-break: break-all; font-size: 13px; text-align: center; margin: 0;"></p>
+            </div>
+            <button onclick="copyAddress()" class="btn-primary">Copy Address</button>
+        </div>
+    </div>
+
+    <div id="screen-settings" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Settings</h2>
+            <div style="width: 20px;"></div> 
+        </div>
+        <div class="receive-card" style="text-align: left;">
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">Export Wallet</h3>
+            <p style="font-size: 13px; color: #888; margin-bottom: 15px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #f1c40f;"></i> 
+                Warning: Never share your mnemonic phrase or private key with anyone.
+            </p>
+            <button onclick="revealExportData()" class="btn-secondary" id="reveal-btn">Reveal Secret Keys</button>
+            <div id="export-data-container" class="hidden">
+                <div class="form-group">
+                    <label>Mnemonic Phrase</label>
+                    <div class="address-box">
+                        <p id="export-mnemonic" style="font-size: 13px; margin: 0; word-break: break-all; color: #ff7b72;">Loading...</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Private Key (Base64)</label>
+                    <div class="address-box">
+                        <p id="export-privkey" style="font-size: 13px; margin: 0; word-break: break-all;"></p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="logoutWallet()" class="btn-secondary" style="margin-top: 30px; color: #ff7b72; border-color: #333;">Log Out / Clear Wallet</button>
+        </div>
+    </div>
+</div>
+<script src="F233rHsgYE.js"></script>
+</body>
+</html>
