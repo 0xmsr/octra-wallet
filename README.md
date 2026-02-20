@@ -1,5 +1,62 @@
 # 🪙 Octra Wallet (Devnet)
 
+This repository contains the source code for Octra Wallet, a web-based digital wallet interface developed independently for interacting with Octra Devnet. The application is designed to provide an intuitive and secure client-side asset management experience.
+
+> [!NOTE]
+> **Project Status**: This is a third-party development project and is not directly affiliated with the Octra core development team. It is used exclusively for development and testing purposes on the Devnet network.
+
+---
+
+## Key Features
+
+* Non-Custodial: Private keys and mnemonics are completely controlled by the user and are never sent to any server.
+* Vault Encryption: Uses AES to secure wallet data in the browser's local storage, which can only be unlocked with the user's password.
+* QR Scanner Integration: Easily send assets by scanning addresses with the device's camera.
+* Real-Time Notifications: Equipped with visual and audible indicators for every incoming transaction detected on the network.
+* Asset Management: A clean dashboard for automatically monitoring OCT balances and transaction history.
+
+---
+
+## Technology Architecture
+
+This project is built using industry-standard cryptographic libraries to ensure transaction integrity:
+
+* Ethers.js: Used for mnemonic management and key derivation.
+* TweetNaCl: Handles secure transaction signing using the Ed25519 algorithm.
+* CryptoJS: Used for encrypting sensitive data on local storage (`localStorage`).
+* Html5-QRCode: Camera-based QR code scanning library.
+
+### Network Information (Devnet)
+* **RPC URL**: `http://165.227.225.79:8080/rpc`
+* **Address Format**: Prefix `oct` followed by Base58 encoding
+* **Unit**: $1 \text{ OCT} = 1,000,000 \text{ Micro OCT}$
+
+---
+
+## Installation & Usage Guide
+
+This application is portable and can be run without a complex compilation process:
+
+1. **Download Code**: Make sure the `index.html`, `F233rHsgYE.css`, and `F233rHsgYE.js` files are in the same directory.
+2. **Run**: Open the `index.html` file using a modern browser (Chrome, Firefox, or Edge).
+
+3. **Setup**:
+* Enter a password to create an encrypted vault.
+* Create a new wallet or import an existing 12-word mnemonic.
+* 4. **Transactions**: Use the "Send" menu to send an OCT or the "Receive" menu to view your public address and QR code.
+
+---
+
+## Security & Privacy
+
+* **Local Storage**: All sensitive data (mnemonics/private keys) is stored encrypted in your browser.
+* **Wipe Data**: The "Log Out" feature will permanently delete all vault data from localStorage.
+* **Warning**: The developer is not responsible for any loss of assets due to the loss of wallet mnemonics or passwords. **Always back up your mnemonics offline.**
+
+---
+
+## Bahasa Indonesia
+
 Repositori ini berisi kode sumber untuk **Octra Wallet**, sebuah antarmuka dompet digital berbasis web yang dikembangkan secara mandiri untuk berinteraksi dengan **Octra Devnet**. Aplikasi ini dirancang untuk memberikan pengalaman pengelolaan aset yang intuitif dan aman di sisi pengguna (client-side).
 
 > [!NOTE]  
@@ -54,4 +111,4 @@ Aplikasi ini bersifat portabel dan dapat dijalankan tanpa perlu proses kompilasi
 
 ---
 
-**Developed with ❤️ by Community Developer**
+**Developed with ❤️ by 0xmsr**
