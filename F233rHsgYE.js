@@ -1,4 +1,4 @@
-const RPC_URL = "http://165.227.225.79:8080/rpc";
+const RPC_URL = "/api/rpc";
 const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const MICRO_OCT = 1000000;
 const STORAGE_KEY = "octra_encrypted_vault";
