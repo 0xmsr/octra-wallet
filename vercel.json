@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/rpc",
+      "destination": "http://165.227.225.79:8080/rpc"
+    }
+  ]
+}
