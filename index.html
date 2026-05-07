@@ -16,54 +16,193 @@
 </head>
 <body>
 <div class="app-wrapper">
+
     <div>
-        <marquee>Powered by 𝕀NPO 𝔸IRDROP ℂRYPTO - Not Official Wallet</marquee>
+        <marquee style="font-size:10px; padding:3px 0; color:#87ceeb; background:rgba(135,206,235,0.05); border-bottom:1px solid #222;">
+            Powered by 𝕀npo 𝔸irdrop ℂrypto
+        </marquee>
     </div>
-    <div id="screen-setup" class="screen active">
-    <div class="setup-header">
-        <i class="fa-solid fa-wallet" style="font-size: 40px; color: #87ceeb; margin-bottom: 15px;"></i>
-        <h1>Octra Wallet</h1>
-        <p>Your Gateway to the Octra Devnet</p>
-    </div>
-    <div class="setup-actions">
-        <input type="password" id="wallet-password" placeholder="Set Wallet Password (for encryption)">
-        <div id="setup-msg"></div>
-        <br>
-        <button onclick="createWallet()" class="btn-primary">Create New Wallet</button>
-        <div class="divider"><span>OR</span></div>
-        <input type="text" id="import-mnemonic" placeholder="Enter 12-word mnemonic phrase">
-        <button onclick="importWallet()" class="btn-secondary">Import Wallet</button>
-    </div>
-</div>
-
-<div id="tx-confirmation-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <h3>Confirm Transaction</h3>
-        <div class="box-info">
-            <p><strong>To:</strong> <span id="conf-to"></span></p>
-            <p><strong>Amount:</strong> <span id="conf-amount"></span> OCT</p>
-            <p><strong>Fee:</strong> <span id="conf-fee"></span> OCT</p>
+    <div id="screen-setup" class="screen">
+        <div class="setup-header">
+            <i class="fa-solid fa-wallet" style="font-size:40px;color:#87ceeb;margin-bottom:15px;"></i>
+            <h1>Octra Wallet</h1>
+            <p style="color:#888;margin-top:8px;">Your Gateway to the Octra Devnet</p>
         </div>
-        <div class="modal-buttons">
-            <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
-            <button class="btn-primary" onclick="executeSend()">Send Now</button>
+        <div class="setup-actions">
+            <div class="form-group" style="margin-bottom:10px;">
+                <label>Wallet Password</label>
+                <input type="password" id="wallet-password" placeholder="Set encryption password">
+            </div>
+            <div id="setup-msg"></div>
+            <button onclick="createWallet()" class="btn-primary">
+                <i class="fa-solid fa-plus" style="margin-right:6px;"></i>Create New Wallet
+            </button>
+            <div id="mnemonic-display" style="display:none;" class="mnemonic-reveal-box">
+                <strong style="display:block;margin-bottom:6px;color:#f1c40f;"><i class="fa-solid fa-triangle-exclamation"></i> Save this phrase!</strong>
+                <span id="mnemonic-text"></span>
+            </div>
+            <div class="divider"><span>OR IMPORT</span></div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label>12-word Mnemonic</label>
+                <input type="text" id="import-mnemonic" placeholder="word1 word2 word3 …">
+            </div>
+            <button onclick="importWallet()" class="btn-secondary">
+                <i class="fa-solid fa-file-import" style="margin-right:6px;"></i>Import Wallet
+            </button>
         </div>
     </div>
-</div>
 
+    <div id="tx-confirmation-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>Confirm Transaction</h3>
+            <div class="box-info">
+                <p><strong>To:</strong> <span id="conf-to"></span></p>
+                <p><strong>Amount:</strong> <span id="conf-amount"></span> OCT</p>
+                <p><strong>Fee:</strong> <span id="conf-fee"></span> OCT</p>
+                <div id="conf-message-row" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;">
+                    <p style="margin:0;"><strong id="conf-message-label">Message:</strong></p>
+                    <p id="conf-message" style="font-size:12px;color:#aaa;margin:4px 0 0;word-break:break-all;"></p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn-primary" onclick="executeSend()">Send Now</button>
+            </div>
+        </div>
+    </div>
+    <div id="screen-unlock" class="screen" style="display:none;">
+        <div style="text-align:center;margin-top:50px;margin-bottom:40px;">
+            <div style="width:64px;height:64px;background:rgba(135,206,235,.1);border:1px solid rgba(135,206,235,.3);
+                        border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <i class="fa-solid fa-lock" style="font-size:26px;color:#87ceeb;"></i>
+            </div>
+            <h2 style="margin:0 0 6px;">Unlock Wallet</h2>
+            <p style="color:#555;font-size:13px;margin:0;">Enter your password to continue</p>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="unlock-password" placeholder="Your wallet password"
+                   onkeydown="if(event.key==='Enter')tryUnlockVault()">
+        </div>
+        <div id="unlock-msg" style="min-height:24px;margin-bottom:10px;"></div>
+        <button onclick="tryUnlockVault()" class="btn-primary">
+            <i class="fa-solid fa-unlock" style="margin-right:6px;"></i>Unlock
+        </button>
+        <div style="text-align:center;margin-top:20px;">
+            <button onclick="showScreen('screen-setup')" style="background:none;border:none;color:#555;font-size:13px;cursor:pointer;text-decoration:underline;">
+                Import different wallet
+            </button>
+        </div>
+    </div>
+    <div id="lock-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div style="text-align:center;margin-bottom:16px;">
+                <div style="width:56px;height:56px;background:rgba(135,206,235,.1);border:1px solid rgba(135,206,235,.3);
+                            border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <i class="fa-solid fa-lock" style="font-size:22px;color:#87ceeb;"></i>
+                </div>
+                <h3 style="margin:0 0 4px;color:#fff;">Wallet Locked</h3>
+                <p style="font-size:12px;color:#555;margin:0;">Enter your password to unlock</p>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:12px;">Password</label>
+                <input type="password" id="lock-modal-password" placeholder="Your wallet password"
+                       onkeydown="if(event.key==='Enter')unlockFromModal()">
+            </div>
+            <p id="lock-modal-msg" style="font-size:12px;color:#f87171;min-height:18px;margin-bottom:10px;"></p>
+            <button onclick="unlockFromModal()" class="btn-primary">
+                <i class="fa-solid fa-unlock" style="margin-right:6px;"></i>Unlock
+            </button>
+            <div style="text-align:center;margin-top:14px;">
+                <button onclick="document.getElementById('lock-modal').classList.add('hidden');showScreen('screen-setup')"
+                        style="background:none;border:none;color:#444;font-size:12px;cursor:pointer;text-decoration:underline;">
+                    Import different wallet
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="logout-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div style="text-align:center;margin-bottom:16px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:32px;color:#f87171;"></i>
+            </div>
+            <h3 style="color:#f87171;text-align:center;margin-bottom:8px;">Clear All Wallets</h3>
+            <p style="font-size:13px;color:#888;margin-bottom:16px;text-align:center;">
+                This will permanently delete all wallets from this device.<br>
+                Make sure you have your mnemonic phrases backed up.
+            </p>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:12px;">Type <strong style="color:#f87171;">DELETE</strong> to confirm</label>
+                <input type="text" id="logout-confirm-input" placeholder="DELETE" autocomplete="off"
+                       style="border-color:#f8717144;"
+                       onkeydown="if(event.key==='Enter')confirmLogout()">
+            </div>
+            <p id="logout-confirm-msg" style="font-size:12px;color:#f87171;min-height:18px;margin-bottom:10px;"></p>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="cancelLogout()">Cancel</button>
+                <button onclick="confirmLogout()" style="flex:1;padding:14px;font-size:14px;font-weight:600;
+                        cursor:pointer;border:none;border-radius:10px;background:#f87171;color:#fff;">
+                    Delete Everything
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="remove-wallet-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="color:#f87171;margin-bottom:6px;">Remove Wallet</h3>
+            <p style="font-size:13px;color:#888;margin-bottom:14px;">
+                Remove <strong id="remove-wallet-name-label" style="color:#fff;"></strong>?
+                Enter your password to confirm.
+            </p>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:12px;">Wallet Password</label>
+                <input type="password" id="remove-wallet-pass" placeholder="Your password"
+                       onkeydown="if(event.key==='Enter')confirmRemoveWallet()">
+            </div>
+            <p id="remove-wallet-msg" style="font-size:12px;min-height:18px;margin-bottom:10px;"></p>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="cancelRemoveWallet()">Cancel</button>
+                <button onclick="confirmRemoveWallet()" style="flex:1;padding:14px;font-size:14px;font-weight:600;
+                        cursor:pointer;border:none;border-radius:10px;background:#f87171;color:#fff;">
+                    Remove
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="info-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="text-align:center;">
+            <i class="fa-solid fa-circle-info" style="font-size:28px;color:#87ceeb;margin-bottom:12px;display:block;"></i>
+            <p id="info-modal-text" style="font-size:14px;color:#ccc;margin-bottom:16px;"></p>
+            <button onclick="document.getElementById('info-modal').classList.add('hidden')" class="btn-primary">OK</button>
+        </div>
+    </div>
     <div id="screen-dashboard" class="screen">
         <div class="top-bar">
-            <div class="network-badge"><span class="dot"></span> Octra Devnet</div>
-            <i class="fa-solid fa-qrcode" onclick="showScreen('screen-receive')"></i>
+            <div class="network-badge" onclick="showScreen('screen-network')" style="cursor:pointer;" title="Network Info"><span class="dot" id="network-dot"></span> <span id="network-badge-text">Octra Devnet</span></div>
+            <div style="display:flex;gap:12px;align-items:center;">
+                <i class="fa-solid fa-qrcode" onclick="showScreen('screen-receive')" title="Receive" style="font-size:20px;cursor:pointer;color:#888;"></i>
+                <i class="fa-solid fa-lock" onclick="lockWallet()" title="Lock Wallet" style="font-size:18px;cursor:pointer;color:#555;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#555'"></i>
+            </div>
         </div>
+        <div id="wallet-selector-bar"></div>
+
         <div class="balance-card">
-            <p class="balance-label">Total Balance</p>
-            <h1 class="balance-amount"><span id="ui-balance">0.00</span> <span style="font-size: 16px; color: #888;">OCT</span></h1>
+            <p class="balance-label">
+                <span id="ui-wallet-name">Account 1</span> · Total Balance
+            </p>
+            <h1 class="balance-amount">
+                <span id="ui-balance">0.00</span>
+                <span style="font-size:16px;color:#888;"> OCT</span>
+            </h1>
             <p class="address-badge" onclick="copyAddress()">
-                <span id="ui-addr-short">Loading...</span> <i class="fa-regular fa-copy"></i>
+                <span id="ui-addr-short">Loading…</span>
+                <i class="fa-regular fa-copy"></i>
             </p>
             <div id="copy-msg" class="msg-toast hidden">Copied!</div>
         </div>
+
         <div class="action-row">
             <div class="action-btn" onclick="showScreen('screen-send')">
                 <div class="icon-circle"><i class="fa-solid fa-arrow-up"></i></div>
@@ -73,15 +212,16 @@
                 <div class="icon-circle"><i class="fa-solid fa-arrow-down"></i></div>
                 <span>Receive</span>
             </div>
-            <div class="action-btn" onclick="requestFaucet()">
-                <div class="icon-circle"><i class="fa-solid fa-faucet-drip"></i></div>
-                <span>Faucet</span>
+            <div class="action-btn" onclick="showScreen('screen-enc-balance')">
+                <div class="icon-circle"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>Private</span>
             </div>
-            <div class="action-btn" onclick="refreshData()">
-                <div class="icon-circle"><i class="fa-solid fa-rotate-right"></i></div>
-                <span>Refresh</span>
+            <div class="action-btn" onclick="showScreen('screen-stealth')">
+                <div class="icon-circle"><i class="fa-solid fa-eye-slash"></i></div>
+                <span>Stealth</span>
             </div>
         </div>
+
         <div class="asset-list">
             <h3>Assets</h3>
             <div class="asset-item">
@@ -96,108 +236,729 @@
                     <strong id="asset-balance">0.00</strong>
                 </div>
             </div>
+            <div class="asset-item" onclick="showScreen('screen-enc-balance')" style="cursor:pointer;">
+                <div class="asset-left">
+                    <div class="asset-icon" style="color:#a78bfa;"><i class="fa-solid fa-eye-slash"></i></div>
+                    <div class="asset-info">
+                        <strong>OCT<sup style="font-size:9px;color:#a78bfa;">enc</sup></strong>
+                        <span>Encrypted Balance</span>
+                    </div>
+                </div>
+                <div class="asset-right" style="color:#a78bfa;font-size:12px;">
+                    <strong id="asset-enc-status">—</strong>
+                </div>
+            </div>
         </div>
+
         <div class="bottom-nav">
             <div class="nav-item active" onclick="showScreen('screen-dashboard')">
-                <i class="fa-solid fa-wallet"></i>
-                <span>Wallet</span>
+                <i class="fa-solid fa-wallet"></i><span>Wallet</span>
             </div>
             <div class="nav-item" onclick="showScreen('screen-history')">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>History</span>
+                <i class="fa-solid fa-clock-rotate-left"></i><span>History</span>
+            </div>
+            <div class="nav-item" onclick="showScreen('screen-network')">
+                <i class="fa-solid fa-tower-broadcast"></i><span>Network</span>
             </div>
             <div class="nav-item" onclick="showScreen('screen-settings')">
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
+                <i class="fa-solid fa-gear"></i><span>Settings</span>
             </div>
         </div>
     </div>
+    <div id="screen-add-wallet" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Add Wallet</h2>
+            <div style="width:20px;"></div>
+        </div>
 
+        <div class="algo-badge">
+            <i class="fa-solid fa-key"></i> Ed25519 · PBKDF2-HMAC-SHA512 · 2048 iter
+        </div>
+
+        <div class="form-group">
+            <label>Wallet Name</label>
+            <input type="text" id="new-wallet-name" placeholder="e.g. Savings, Trading…">
+        </div>
+        <div class="mode-toggle">
+            <input type="radio" name="add-mode" id="mode-create" value="create" checked>
+            <label for="mode-create"><i class="fa-solid fa-plus"></i> Create New</label>
+            <input type="radio" name="add-mode" id="mode-import" value="import">
+            <label for="mode-import"><i class="fa-solid fa-file-import"></i> Import</label>
+        </div>
+
+        <div id="new-mnemonic-display" class="mnemonic-reveal-box">
+            <strong style="display:block;margin-bottom:6px;color:#f1c40f;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Back up this phrase now!
+            </strong>
+            <span id="new-mnemonic-text"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Mnemonic (for Import)</label>
+            <input type="text" id="import-mnemonic-new" placeholder="word1 word2 … word12">
+        </div>
+
+        <div id="add-wallet-msg"></div>
+        <button onclick="addNewWallet()" class="btn-primary" style="margin-top:10px;">
+            <i class="fa-solid fa-wallet" style="margin-right:6px;"></i>Add Wallet
+        </button>
+    </div>
     <div id="screen-send" class="screen">
         <div class="screen-header">
             <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
             <h2>Send OCT</h2>
-            <div style="width: 20px;"></div>
+            <div style="width:20px;"></div>
         </div>
-        <div id="reader" style="width: 100%; display: none; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 2px solid #87ceeb;"></div>
+        <div id="reader" style="width:100%;display:none;margin-bottom:20px;border-radius:10px;overflow:hidden;border:2px solid #87ceeb;"></div>
         <div class="form-group">
             <label>Recipient Address</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="send-to" placeholder="oct...">
-                <button class="btn-secondary" style="width: auto; padding: 0 15px; margin-top: 8px;" onclick="startQRScanner()">
-                    <i class="fa-solid fa-qrcode" style="color: #87ceeb;"></i>
+            <div style="display:flex;gap:10px;">
+                <input type="text" id="send-to" placeholder="oct…">
+                <button class="btn-secondary" style="width:auto;padding:0 15px;margin-top:8px;" onclick="startQRScanner()">
+                    <i class="fa-solid fa-qrcode" style="color:#87ceeb;"></i>
                 </button>
             </div>
         </div>
-        <div class="form-group" style="margin-bottom: 5px;">
+        <div class="form-group" style="margin-bottom:5px;">
             <label>Amount (OCT)</label>
             <input type="number" id="send-amount" placeholder="0.00" step="0.000001" oninput="updateGasFee()">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px;">
-                <span style="color: #888;">Available: <span id="send-avail" style="color: #fff;">0.00</span> OCT</span>
-                <span style="color: #888;">TX Fee Estimation: <span id="send-fee" style="color: #f1c40f;">0.01</span> OCT</span>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px;">
+                <span style="color:#888;">Available: <span id="send-avail" style="color:#fff;">0.00</span> OCT</span>
+                <span style="color:#888;">Fee: <span id="send-fee" style="color:#f1c40f;">0.01</span> OCT</span>
             </div>
         </div>
-        <button onclick="sendTransaction()" class="btn-primary" style="margin-top: 20px;">Confirm Send</button>
+        <div class="form-group" style="margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label style="margin:0;">Message <span style="color:#555;font-size:11px;">(optional)</span></label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#888;">
+                    <span>Encrypt</span>
+                    <div id="encrypt-toggle" onclick="toggleEncrypt()"
+                         style="width:36px;height:20px;background:#2a2a2a;border-radius:20px;
+                                position:relative;cursor:pointer;transition:.2s;border:1px solid #333;">
+                        <div id="encrypt-knob"
+                             style="width:14px;height:14px;background:#555;border-radius:50%;
+                                    position:absolute;top:2px;left:2px;transition:.2s;"></div>
+                    </div>
+                    <i id="encrypt-icon" class="fa-solid fa-unlock" style="color:#555;font-size:13px;"></i>
+                </label>
+            </div>
+            <textarea id="send-message" placeholder="Optional plain text message…"
+                      rows="2"
+                      style="width:100%;padding:10px 12px;box-sizing:border-box;background:#1e1e1e;
+                             color:#fff;border:1px solid #333;border-radius:10px;resize:none;
+                             font-family:'Inter',sans-serif;font-size:13px;outline:none;
+                             transition:border-color .2s;"></textarea>
+            <div id="encrypt-note"
+                 style="display:none;font-size:10px;color:#87ceeb;margin-top:4px;
+                        background:rgba(135,206,235,.06);padding:5px 8px;border-radius:6px;
+                        border:1px solid rgba(135,206,235,.15);">
+                <i class="fa-solid fa-lock" style="margin-right:4px;"></i>
+                Message will be encrypted with recipient's public key (X25519+XSalsa20-Poly1305).
+                Only the recipient can decrypt it.
+            </div>
+        </div>
+
+        <button onclick="sendTransaction()" class="btn-primary" style="margin-top:16px;">Confirm Send</button>
         <div id="tx-msg"></div>
+    </div>
+    <div id="screen-enc-balance" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Private Balance</h2>
+            <button onclick="loadEncBalanceScreen()" style="background:none;border:none;color:#87ceeb;
+                    cursor:pointer;font-size:14px;padding:4px;" title="Refresh">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div style="background:#0d0d0d;border:1px solid #222;border-radius:12px;padding:14px;">
+                <div style="font-size:10px;color:#666;margin-bottom:4px;font-weight:600;letter-spacing:.5px;">
+                    PUBLIC
+                </div>
+                <div style="font-size:18px;font-weight:700;color:#fff;" id="enc-pub-balance">—</div>
+                <div style="font-size:10px;color:#555;margin-top:2px;">OCT</div>
+                <div style="margin-top:8px;">
+                    <i class="fa-solid fa-unlock" style="color:#87ceeb;font-size:11px;"></i>
+                    <span style="font-size:10px;color:#555;margin-left:4px;">Visible on-chain</span>
+                </div>
+            </div>
+            <div style="background:#120d1a;border:1px solid #2a1f3d;border-radius:12px;padding:14px;">
+                <div style="font-size:10px;color:#a78bfa;margin-bottom:4px;font-weight:600;letter-spacing:.5px;">
+                    PRIVATE
+                </div>
+                <div style="font-size:18px;font-weight:700;color:#a78bfa;" id="enc-priv-balance">—</div>
+                <div style="font-size:10px;color:#6d5a8a;margin-top:2px;">OCT<sup>enc</sup></div>
+                <div style="margin-top:8px;" id="enc-priv-status">
+                    <i class="fa-solid fa-spinner fa-spin" style="color:#a78bfa;font-size:11px;"></i>
+                    <span style="font-size:10px;color:#6d5a8a;margin-left:4px;">Loading…</span>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <button id="enc-tab-encrypt" onclick="switchEncTab('encrypt')"
+                    style="flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:600;
+                           border:1px solid #a78bfa;background:rgba(167,139,250,.15);color:#a78bfa;cursor:pointer;">
+                <i class="fa-solid fa-lock" style="margin-right:5px;"></i>Encrypt
+            </button>
+            <button id="enc-tab-decrypt" onclick="switchEncTab('decrypt')"
+                    style="flex:1;padding:10px;border-radius:10px;font-size:12px;font-weight:600;
+                           border:1px solid #333;background:transparent;color:#555;cursor:pointer;">
+                <i class="fa-solid fa-lock-open" style="margin-right:5px;"></i>Decrypt
+            </button>
+        </div>
+        <div id="enc-panel-encrypt">
+            <div style="background:#0d0d0d;border:1px solid #2a1f3d;border-radius:12px;padding:16px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;color:#ccc;margin-bottom:12px;">
+                    <i class="fa-solid fa-lock" style="color:#a78bfa;margin-right:6px;"></i>
+                    Move Public → Private
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-size:11px;color:#666;">Amount to Encrypt (OCT)</label>
+                    <input type="number" id="enc-amount" placeholder="0.00" step="0.000001"
+                           oninput="updateEncFee()"
+                           style="width:100%;padding:10px 12px;box-sizing:border-box;background:#111;
+                                  color:#fff;border:1px solid #2a1f3d;border-radius:10px;font-size:15px;
+                                  font-weight:600;outline:none;margin-top:6px;">
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;
+                            color:#555;margin-bottom:14px;">
+                    <span>Available: <span id="enc-avail" style="color:#aaa;">—</span> OCT</span>
+                    <span>OU Fee: <span id="enc-ou-fee" style="color:#fbbf24;">10000</span></span>
+                </div>
+                <button onclick="executeEncryptBalance()"
+                        style="width:100%;padding:13px;background:linear-gradient(135deg,#7c3aed,#a78bfa);
+                               border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;
+                               cursor:pointer;letter-spacing:.3px;">
+                    <i class="fa-solid fa-lock" style="margin-right:6px;"></i>Encrypt Balance
+                </button>
+                <div id="enc-msg" style="margin-top:10px;"></div>
+            </div>
+            <div style="background:rgba(167,139,250,.04);border:1px solid rgba(167,139,250,.1);
+                        border-radius:10px;padding:10px;font-size:11px;color:#555;line-height:1.6;">
+                <i class="fa-solid fa-circle-info" style="color:#a78bfa;margin-right:4px;"></i>
+                Encrypting moves OCT from your public balance into a private shielded pool.
+                Uses <code style="color:#87ceeb;">EncryptBalance</code> op_type.
+            </div>
+        </div>
+        <div id="enc-panel-decrypt" style="display:none;">
+            <div style="background:#0d0d0d;border:1px solid #1a2a1a;border-radius:12px;padding:16px;margin-bottom:12px;">
+                <div style="font-size:13px;font-weight:600;color:#ccc;margin-bottom:12px;">
+                    <i class="fa-solid fa-lock-open" style="color:#4ade80;margin-right:6px;"></i>
+                    Move Private → Public
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-size:11px;color:#666;">Amount to Decrypt (OCT)</label>
+                    <input type="number" id="dec-amount" placeholder="0.00" step="0.000001"
+                           style="width:100%;padding:10px 12px;box-sizing:border-box;background:#111;
+                                  color:#fff;border:1px solid #1a2a1a;border-radius:10px;font-size:15px;
+                                  font-weight:600;outline:none;margin-top:6px;">
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;
+                            color:#555;margin-bottom:14px;">
+                    <span>Decrypt allowance: <span id="dec-allowance" style="color:#aaa;">—</span></span>
+                    <span>OU Fee: <span style="color:#fbbf24;">10000</span></span>
+                </div>
+                <button onclick="executeDecryptBalance()"
+                        style="width:100%;padding:13px;background:linear-gradient(135deg,#166534,#4ade80);
+                               border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;
+                               cursor:pointer;letter-spacing:.3px;">
+                    <i class="fa-solid fa-lock-open" style="margin-right:6px;"></i>Decrypt Balance
+                </button>
+                <div id="dec-msg" style="margin-top:10px;"></div>
+            </div>
+            <div style="background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.1);
+                        border-radius:10px;padding:10px;font-size:11px;color:#555;line-height:1.6;">
+                <i class="fa-solid fa-circle-info" style="color:#4ade80;margin-right:4px;"></i>
+                Decrypting reveals private OCT back to your public balance.
+                Uses <code style="color:#87ceeb;">DecryptBalance</code> op_type.
+                Requires prior FHE key registration.
+            </div>
+        </div>
+        <details style="margin-top:14px;">
+            <summary style="font-size:11px;color:#444;cursor:pointer;padding:8px 0;
+                            list-style:none;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+                <span>Encrypted cipher details</span>
+            </summary>
+            <div style="margin-top:8px;background:#0a0a0a;border:1px solid #1a1a1a;
+                        border-radius:10px;padding:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:11px;color:#666;" id="enc-status">Checking…</span>
+                    <span id="fhe-pubkey-status" style="font-size:10px;color:#444;">FHE key: —</span>
+                </div>
+                <div id="enc-balance-container" style="font-size:9px;font-family:monospace;
+                     color:#333;word-break:break-all;line-height:1.5;"></div>
+            </div>
+        </details>
+    </div>
+    <div id="screen-nft" class="screen">
+        <div class="screen-header" style="margin-bottom:14px;">
+            <div style="font-size:18px;font-weight:800;letter-spacing:-.5px;">
+                <span style="color:#87ceeb;">◈</span> SpectrumNFT
+            </div>
+            <button onclick="nftRefreshState()" style="background:none;border:none;color:#87ceeb;cursor:pointer;font-size:14px;padding:4px;">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:#111;border:1px solid #222;border-radius:12px;padding:12px;">
+                <div style="font-size:10px;color:#555;letter-spacing:.5px;margin-bottom:4px;">TOTAL SUPPLY</div>
+                <div style="font-size:22px;font-weight:800;color:#87ceeb;" id="nft-stat-supply">—</div>
+            </div>
+            <div style="background:#111;border:1px solid #222;border-radius:12px;padding:12px;">
+                <div style="font-size:10px;color:#555;letter-spacing:.5px;margin-bottom:4px;">YOU OWN</div>
+                <div style="font-size:22px;font-weight:800;color:#87ceeb;" id="nft-stat-balance">—</div>
+            </div>
+        </div>
+        <div id="nft-contract-bar" style="background:rgba(135,206,235,.05);border:1px solid rgba(135,206,235,.15);
+             border-radius:10px;padding:8px 12px;margin-bottom:14px;display:flex;align-items:center;
+             justify-content:space-between;font-size:11px;">
+            <div>
+                <span style="color:#555;">Contract: </span>
+                <span id="nft-contract-name" style="color:#87ceeb;font-weight:700;">SpectrumNFT</span>
+                <span style="color:#444;margin-left:6px;" id="nft-contract-symbol">[SPEC]</span>
+            </div>
+            <div style="color:#444;font-size:10px;" id="nft-contract-addr">Not deployed</div>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:14px;background:#111;border-radius:10px;padding:4px;border:1px solid #1e1e1e;">
+            <button class="nft-tab active" data-tab="nft-tab-mint" onclick="nftSwitchTab(this,'nft-tab-mint')"
+                style="flex:1;padding:7px 4px;background:#87ceeb;color:#000;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">
+                ✦ Mint
+            </button>
+            <button class="nft-tab" data-tab="nft-tab-query" onclick="nftSwitchTab(this,'nft-tab-query')"
+                style="flex:1;padding:7px 4px;background:transparent;color:#555;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">
+                ◎ Query
+            </button>
+            <button class="nft-tab" data-tab="nft-tab-transfer" onclick="nftSwitchTab(this,'nft-tab-transfer')"
+                style="flex:1;padding:7px 4px;background:transparent;color:#555;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">
+                → Transfer
+            </button>
+            <button class="nft-tab" data-tab="nft-tab-sign" onclick="nftSwitchTab(this,'nft-tab-sign')"
+                style="flex:1;padding:7px 4px;background:transparent;color:#555;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">
+                ✎ Sign
+            </button>
+        </div>
+        <div id="nft-tab-mint" class="nft-tab-panel" style="display:block;">
+            <div class="form-group" style="margin-bottom:10px;">
+                <label style="font-size:11px;color:#666;">Recipient (blank = your address)</label>
+                <input type="text" id="nft-mint-to" placeholder="oct… (default: your address)"
+                       style="font-size:12px;padding:9px 12px;margin-top:4px;">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label style="font-size:11px;color:#666;">Collection Name</label>
+                <input type="text" id="nft-mint-collection" placeholder="Genesis Collection"
+                       style="font-size:12px;padding:9px 12px;margin-top:4px;">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label style="font-size:11px;color:#666;">Metadata URI</label>
+                <input type="text" id="nft-mint-uri" placeholder="ipfs://Qm…"
+                       style="font-size:12px;padding:9px 12px;margin-top:4px;">
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:11px;color:#666;">Royalty BPS (0–1000, 1000 = 10%)</label>
+                <input type="number" id="nft-mint-royalty" placeholder="250" min="0" max="1000"
+                       style="font-size:12px;padding:9px 12px;margin-top:4px;">
+            </div>
+            <button onclick="nftMint()" class="btn-primary" style="margin-top:0;font-size:13px;padding:12px;">
+                <i class="fa-solid fa-hexagon-image" style="margin-right:6px;"></i>Mint NFT
+            </button>
+            <div id="nft-mint-msg" style="margin-top:10px;"></div>
+        </div>
+
+        
+        <div id="nft-tab-query" class="nft-tab-panel" style="display:none;">
+            <div class="form-group" style="margin-bottom:10px;">
+                <label style="font-size:11px;color:#666;">Token ID</label>
+                <input type="number" id="nft-query-id" placeholder="0" min="0"
+                       style="font-size:12px;padding:9px 12px;margin-top:4px;">
+            </div>
+            <button onclick="nftQuery()" class="btn-secondary" style="margin-top:0;font-size:13px;padding:12px;">
+                <i class="fa-solid fa-magnifying-glass" style="margin-right:6px;"></i>Query Token
+            </button>
+            <div id="nft-query-result" style="display:none;background:#111;border:1px solid #222;
+                 border-radius:10px;padding:14px;margin-top:12px;"></div>
+
+            <div style="margin-top:16px;">
+                <label style="font-size:11px;color:#666;display:block;margin-bottom:6px;">Balance of Address</label>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="nft-balance-addr" placeholder="oct… (blank = yours)"
+                           style="font-size:12px;padding:9px 12px;margin-top:0;flex:1;">
+                    <button onclick="nftBalanceOf()" style="width:auto;padding:9px 14px;background:#1e1e1e;
+                            border:1px solid #333;color:#87ceeb;border-radius:10px;cursor:pointer;white-space:nowrap;
+                            font-size:12px;font-weight:600;">Check</button>
+                </div>
+                <div id="nft-balance-result" style="margin-top:8px;font-size:12px;color:#888;"></div>
+            </div>
+        </div>
+
+        
+        <div id="nft-tab-transfer" class="nft-tab-panel" style="display:none;">
+            
+            <div style="display:flex;gap:4px;margin-bottom:12px;">
+                <button class="nft-sub active" data-sub="nft-sub-transfer" onclick="nftSubTab(this,'nft-sub-transfer')"
+                    style="flex:1;padding:7px;background:rgba(135,206,235,.15);border:1px solid rgba(135,206,235,.3);
+                           color:#87ceeb;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Transfer</button>
+                <button class="nft-sub" data-sub="nft-sub-approve" onclick="nftSubTab(this,'nft-sub-approve')"
+                    style="flex:1;padding:7px;background:transparent;border:1px solid #333;
+                           color:#555;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Approve</button>
+                <button class="nft-sub" data-sub="nft-sub-operator" onclick="nftSubTab(this,'nft-sub-operator')"
+                    style="flex:1;padding:7px;background:transparent;border:1px solid #333;
+                           color:#555;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Operator</button>
+            </div>
+
+            <div id="nft-sub-transfer" style="display:block;">
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">To Address</label>
+                    <input type="text" id="nft-trans-to" placeholder="oct…" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Token ID</label>
+                    <input type="number" id="nft-trans-id" placeholder="0" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <button onclick="nftTransfer()" class="btn-primary" style="margin-top:0;font-size:13px;padding:12px;">
+                    <i class="fa-solid fa-arrow-right" style="margin-right:6px;"></i>Transfer NFT
+                </button>
+            </div>
+
+            <div id="nft-sub-approve" style="display:none;">
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">Approved Address</label>
+                    <input type="text" id="nft-approve-addr" placeholder="oct…" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Token ID</label>
+                    <input type="number" id="nft-approve-id" placeholder="0" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <button onclick="nftApprove()" style="width:100%;padding:12px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);
+                        color:#f59e0b;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:0;">
+                    <i class="fa-solid fa-check" style="margin-right:6px;"></i>Approve
+                </button>
+            </div>
+
+            <div id="nft-sub-operator" style="display:none;">
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">Operator Address</label>
+                    <input type="text" id="nft-op-addr" placeholder="oct…" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Approved?</label>
+                    <div style="display:flex;gap:8px;margin-top:6px;">
+                        <button id="nft-op-yes" onclick="nftOpToggle(true)"
+                            style="flex:1;padding:9px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);
+                                   color:#4ade80;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">✓ Yes</button>
+                        <button id="nft-op-no" onclick="nftOpToggle(false)"
+                            style="flex:1;padding:9px;background:transparent;border:1px solid #333;
+                                   color:#555;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">✗ No</button>
+                    </div>
+                </div>
+                <button onclick="nftSetOperator()" style="width:100%;padding:12px;background:rgba(135,206,235,.1);border:1px solid rgba(135,206,235,.3);
+                        color:#87ceeb;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:0;">
+                    <i class="fa-solid fa-user-check" style="margin-right:6px;"></i>Set Operator
+                </button>
+            </div>
+
+            <div id="nft-transfer-msg" style="margin-top:10px;"></div>
+        </div>
+
+        
+        <div id="nft-tab-sign" class="nft-tab-panel" style="display:none;">
+            
+            <div style="display:flex;gap:4px;margin-bottom:12px;">
+                <button class="nft-sign-sub active" data-sub="nft-signsub-msg" onclick="nftSignSubTab(this,'nft-signsub-msg')"
+                    style="flex:1;padding:7px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);
+                           color:#f59e0b;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Message</button>
+                <button class="nft-sign-sub" data-sub="nft-signsub-action" onclick="nftSignSubTab(this,'nft-signsub-action')"
+                    style="flex:1;padding:7px;background:transparent;border:1px solid #333;
+                           color:#555;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">NFT Action</button>
+                <button class="nft-sign-sub" data-sub="nft-signsub-verify" onclick="nftSignSubTab(this,'nft-signsub-verify')"
+                    style="flex:1;padding:7px;background:transparent;border:1px solid #333;
+                           color:#555;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">Verify</button>
+            </div>
+
+            <div id="nft-signsub-msg" style="display:block;">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Message to Sign</label>
+                    <textarea id="nft-sign-msg" rows="3" placeholder="Type your message…"
+                              style="width:100%;margin-top:4px;padding:9px 12px;box-sizing:border-box;background:#1e1e1e;
+                                     color:#fff;border:1px solid #333;border-radius:10px;resize:none;
+                                     font-family:'Inter',sans-serif;font-size:12px;outline:none;"></textarea>
+                </div>
+                <button onclick="nftSignMessage()" style="width:100%;padding:12px;background:rgba(245,158,11,.15);
+                        border:1px solid rgba(245,158,11,.3);color:#f59e0b;border-radius:14px;font-size:13px;
+                        font-weight:700;cursor:pointer;margin-top:0;">
+                    <i class="fa-solid fa-pen-nib" style="margin-right:6px;"></i>Sign with Ed25519
+                </button>
+                <div id="nft-sign-out" style="display:none;background:#0a0a0a;border:1px dashed rgba(245,158,11,.3);
+                     border-radius:10px;padding:12px;margin-top:10px;font-size:10px;font-family:monospace;
+                     color:#f59e0b;word-break:break-all;line-height:1.7;"></div>
+            </div>
+
+            <div id="nft-signsub-action" style="display:none;">
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">Token ID</label>
+                    <input type="number" id="nft-action-token" placeholder="0" style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Action Type</label>
+                    <select id="nft-action-type"
+                            style="width:100%;margin-top:4px;padding:9px 12px;background:#1e1e1e;color:#fff;
+                                   border:1px solid #333;border-radius:10px;font-family:'Inter',sans-serif;
+                                   font-size:12px;outline:none;">
+                        <option value="TransferAuth">Transfer Authorization</option>
+                        <option value="ApproveAuth">Approve Authorization</option>
+                        <option value="MintAuth">Mint Authorization</option>
+                        <option value="BurnAuth">Burn Authorization</option>
+                    </select>
+                </div>
+                <button onclick="nftSignAction()" style="width:100%;padding:12px;background:rgba(245,158,11,.15);
+                        border:1px solid rgba(245,158,11,.3);color:#f59e0b;border-radius:14px;font-size:13px;
+                        font-weight:700;cursor:pointer;margin-top:0;">
+                    <i class="fa-solid fa-shield-halved" style="margin-right:6px;"></i>Sign NFT Action
+                </button>
+                <div id="nft-action-out" style="display:none;background:#0a0a0a;border:1px dashed rgba(245,158,11,.3);
+                     border-radius:10px;padding:12px;margin-top:10px;font-size:10px;font-family:monospace;
+                     color:#f59e0b;word-break:break-all;line-height:1.7;"></div>
+            </div>
+
+            <div id="nft-signsub-verify" style="display:none;">
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">Original Message</label>
+                    <input type="text" id="nft-verify-msg" placeholder="original message"
+                           style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:11px;color:#666;">Signature (Base64)</label>
+                    <input type="text" id="nft-verify-sig" placeholder="base64 signature…"
+                           style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:11px;color:#666;">Signer Public Key (Base64)</label>
+                    <input type="text" id="nft-verify-pubkey" placeholder="base64 pubkey… (blank = yours)"
+                           style="font-size:12px;padding:9px 12px;margin-top:4px;">
+                </div>
+                <button onclick="nftVerifySig()" style="width:100%;padding:12px;background:rgba(135,206,235,.1);
+                        border:1px solid rgba(135,206,235,.3);color:#87ceeb;border-radius:14px;font-size:13px;
+                        font-weight:700;cursor:pointer;margin-top:0;">
+                    <i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>Verify Signature
+                </button>
+                <div id="nft-verify-out" style="margin-top:10px;font-size:12px;"></div>
+            </div>
+        </div>
+
+        <div style="height:70px;"></div>
     </div>
 
     <div id="screen-history" class="screen">
         <div class="screen-header">
             <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
             <h2>Transactions</h2>
-            <div style="width: 20px;"></div> 
+            <div style="width:20px;"></div>
         </div>
-        <div id="history-list" class="asset-list" style="margin-top: 10px;">
-        </div>
+        <div id="history-list" class="asset-list" style="margin-top:10px;"></div>
     </div>
-
     <div id="screen-receive" class="screen">
         <div class="screen-header">
             <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
             <h2>Receive OCT</h2>
-            <div style="width: 20px;"></div>
+            <div style="width:20px;"></div>
         </div>
         <div class="receive-card">
-            <div id="qrcode-container" style="background: #fff; padding: 15px; border-radius: 10px; display: inline-block; margin: 0 auto;"></div>
-            <p style="margin-top: 20px; font-size: 14px; color: #888;">Scan address to receive payment</p>
+            <div id="qrcode-container" style="background:#fff;padding:15px;border-radius:10px;display:inline-block;margin:0 auto;"></div>
+            <p style="margin-top:20px;font-size:14px;color:#888;">Scan address to receive payment</p>
             <div class="address-box">
-                <p id="full-address" style="word-break: break-all; font-size: 13px; text-align: center; margin: 0;"></p>
+                <p id="full-address" style="word-break:break-all;font-size:13px;text-align:center;margin:0;"></p>
             </div>
             <button onclick="copyAddress()" class="btn-primary">Copy Address</button>
         </div>
     </div>
-
     <div id="screen-settings" class="screen">
         <div class="screen-header">
             <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
             <h2>Settings</h2>
-            <div style="width: 20px;"></div> 
+            <div style="width:20px;"></div>
         </div>
-        <div class="receive-card" style="text-align: left;">
-            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">Export Wallet</h3>
-            <p style="font-size: 13px; color: #888; margin-bottom: 15px;">
-                <i class="fa-solid fa-triangle-exclamation" style="color: #f1c40f;"></i> 
-                Warning: Never share your mnemonic phrase or private key with anyone.
+        <div class="receive-card" style="text-align:left;">
+            <h3 style="margin-bottom:15px;border-bottom:1px solid #333;padding-bottom:10px;">Export Active Wallet</h3>
+
+            <div class="algo-badge" style="margin-bottom:14px;">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span id="export-algo-info">Ed25519 · BIP39 PBKDF2-HMAC-SHA512</span>
+            </div>
+
+            <p style="font-size:13px;color:#888;margin-bottom:15px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f1c40f;"></i>
+                Never share your mnemonic or private key with anyone.
             </p>
-            <button onclick="revealExportData()" class="btn-secondary" id="reveal-btn">Reveal Secret Keys</button>
+            <div id="reveal-confirm-row">
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-size:12px;color:#888;">Confirm Password to Reveal Keys</label>
+                    <input type="password" id="reveal-confirm-pass" placeholder="Your wallet password"
+                           onkeydown="if(event.key==='Enter')revealExportData()">
+                </div>
+                <p id="reveal-confirm-msg" style="font-size:12px;min-height:16px;margin-bottom:8px;"></p>
+            </div>
+            <button onclick="revealExportData()" class="btn-secondary" id="reveal-btn">
+                <i class="fa-solid fa-key" style="margin-right:6px;"></i>Reveal Secret Keys
+            </button>
             <div id="export-data-container" class="hidden">
                 <div class="form-group">
                     <label>Mnemonic Phrase</label>
                     <div class="address-box">
-                        <p id="export-mnemonic" style="font-size: 13px; margin: 0; word-break: break-all; color: #ff7b72;">Loading...</p>
+                        <p id="export-mnemonic" style="font-size:13px;margin:0;word-break:break-all;color:#ff7b72;"></p>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Private Key (Base64)</label>
+                    <label>Private Key (Base64 / Ed25519)</label>
                     <div class="address-box">
-                        <p id="export-privkey" style="font-size: 13px; margin: 0; word-break: break-all;"></p>
+                        <p id="export-privkey" style="font-size:13px;margin:0;word-break:break-all;"></p>
                     </div>
                 </div>
             </div>
-            <button onclick="logoutWallet()" class="btn-secondary" style="margin-top: 30px; color: #ff7b72; border-color: #333;">Log Out / Clear Wallet</button>
+            
+            <div style="margin-top:24px;border-top:1px solid #2a2a2a;padding-top:20px;">
+                <h3 style="margin-bottom:10px;font-size:14px;color:#87ceeb;">Export Session (atrco:)</h3>
+                <p style="font-size:12px;color:#666;margin-bottom:12px;">
+                    Generate encrypted session string to connect DApps like SpectrumNFT.
+                    <strong style="color:#f1c40f;">Jaga password-nya.</strong>
+                </p>
+                <div class="form-group">
+                    <label style="font-size:12px;color:#888;">Session Password</label>
+                    <input type="password" id="session-export-pass" placeholder="Password untuk enkripsi sesi…"/>
+                </div>
+                <button onclick="exportAtrcoSession()" class="btn-secondary" style="background:rgba(135,206,235,0.08);border-color:rgba(135,206,235,0.3);color:#87ceeb;">
+                    <i class="fa-solid fa-link" style="margin-right:6px;"></i>Generate atrco: Session
+                </button>
+                <div id="atrco-output" style="display:none;margin-top:12px;">
+                    <div class="address-box" style="word-break:break-all;cursor:pointer;" onclick="copyAtrcoSession()" title="Click to copy">
+                        <p id="atrco-string" style="font-size:11px;color:#87ceeb;margin:0;font-family:monospace;"></p>
+                    </div>
+                    <p style="font-size:11px;color:#555;margin-top:6px;">✓ Klik string di atas untuk copy</p>
+                </div>
+            </div>
+
+                        <button onclick="showScreen('screen-lookup')" class="btn-secondary" style="margin-top:12px;background:rgba(135,206,235,0.08);border-color:rgba(135,206,235,0.3);color:#87ceeb;">
+                <i class="fa-solid fa-magnifying-glass" style="margin-right:6px;"></i>Address Lookup
+            </button>
+<button onclick="logoutWallet()" class="btn-secondary" style="margin-top:12px;color:#ff7b72;border-color:#333;">
+                <i class="fa-solid fa-right-from-bracket" style="margin-right:6px;"></i>Log Out &amp; Clear All Wallets
+            </button>
         </div>
     </div>
+    <div id="screen-stealth" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Stealth Send</h2>
+            <div style="width:20px;"></div>
+        </div>
+        <div style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:12px;padding:12px;margin-bottom:16px;">
+            <p style="font-size:12px;color:#4ade80;margin:0;line-height:1.6;">
+                <i class="fa-solid fa-eye-slash" style="margin-right:5px;"></i>
+                <strong>Stealth Transaction</strong><br>
+                <span style="color:#666;">Generates a one-time address via ECDH. Only the recipient can scan and claim the funds.</span>
+            </p>
+        </div>
+        <div class="form-group">
+            <label>Recipient Address</label>
+            <input type="text" id="stealth-to" placeholder="oct…">
+        </div>
+        <div class="form-group">
+            <label>Amount (OCT)</label>
+            <input type="number" id="stealth-amount" placeholder="0.00" step="0.000001">
+            <div style="font-size:12px;margin-top:8px;color:#888;">
+                Available: <span id="stealth-avail" style="color:#fff;">—</span> OCT
+            </div>
+        </div>
+        <div id="stealth-msg"></div>
+        <div id="stealth-confirm-box" style="display:none;background:#1a1a1a;border:1px solid rgba(74,222,128,.3);border-radius:12px;padding:14px;margin-bottom:12px;">
+            <p style="font-size:12px;font-weight:700;color:#4ade80;margin-bottom:10px;"><i class="fa-solid fa-shield-halved"></i> Confirm Stealth Send</p>
+            <p style="font-size:12px;color:#888;margin:4px 0;">Stealth addr: <span id="stealth-confirm-to" style="color:#fff;font-family:monospace;"></span></p>
+            <p style="font-size:12px;color:#888;margin:4px 0;">Ephemeral key: <span id="stealth-confirm-eph" style="color:#87ceeb;font-family:monospace;"></span></p>
+            <p style="font-size:12px;color:#888;margin:4px 0;">Amount: <span id="stealth-confirm-amount" style="color:#fff;font-weight:700;"></span></p>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button onclick="document.getElementById('stealth-confirm-box').style.display='none'" class="btn-secondary" style="flex:1;">Cancel</button>
+                <button onclick="confirmStealthSend()" class="btn-primary" style="flex:1;background:#4ade80;color:#000;">Confirm Send</button>
+            </div>
+        </div>
+        <button onclick="document.getElementById('stealth-avail').textContent=currentWallet.balance||'0';sendStealth()" class="btn-primary" style="background:rgba(74,222,128,.85);color:#000;">
+            <i class="fa-solid fa-eye-slash" style="margin-right:6px;"></i>Generate Stealth Tx
+        </button>
+        <div style="height:70px;"></div>
+    </div>
+    <div id="screen-network" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Network</h2>
+            <i class="fa-solid fa-rotate-right" style="color:#87ceeb;cursor:pointer;" onclick="loadNetworkStats()" title="Refresh"></i>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:14px;margin-bottom:14px;">
+            <p style="font-size:11px;color:#555;font-weight:600;margin-bottom:10px;letter-spacing:.5px;">SWITCH NETWORK</p>
+            <div style="display:flex;gap:8px;">
+                <button onclick="switchNetwork('devnet');this.style.background='#87ceeb';this.style.color='#000';this.nextElementSibling.style.background='#1e1e1e';this.nextElementSibling.style.color='#fff';"
+                        id="btn-devnet"
+                        style="flex:1;padding:10px;background:#87ceeb;color:#000;border-radius:10px;border:none;font-weight:700;font-size:13px;cursor:pointer;">
+                    Devnet
+                </button>
+                <button onclick="switchNetwork('mainnet');this.style.background='#4ade80';this.style.color='#000';this.previousElementSibling.style.background='#1e1e1e';this.previousElementSibling.style.color='#fff';"
+                        id="btn-mainnet"
+                        style="flex:1;padding:10px;background:#1e1e1e;color:#fff;border-radius:10px;border:1px solid #333;font-weight:700;font-size:13px;cursor:pointer;">
+                    Mainnet Alpha
+                </button>
+            </div>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:14px;margin-bottom:14px;">
+            <p style="font-size:11px;color:#555;font-weight:600;margin-bottom:8px;letter-spacing:.5px;">CUSTOM RPC URL</p>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="custom-rpc-input" placeholder="http://your-node:8080/rpc" style="flex:1;margin-top:0;font-size:12px;padding:10px;">
+                <button onclick="applyCustomRpc()" style="width:auto;padding:0 12px;background:#87ceeb;color:#000;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;">Apply</button>
+            </div>
+            <button onclick="resetRpc()" style="width:100%;margin-top:8px;padding:8px;background:transparent;border:1px solid #2a2a2a;color:#555;border-radius:8px;font-size:12px;cursor:pointer;">Reset to Default</button>
+            <p id="custom-rpc-status" style="font-size:11px;color:#4ade80;margin-top:6px;"></p>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:14px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <p style="font-size:11px;color:#555;font-weight:600;letter-spacing:.5px;margin:0;">RECOMMENDED FEES</p>
+                <i class="fa-solid fa-rotate-right" style="color:#555;cursor:pointer;font-size:11px;" onclick="loadFeeRecommendation()"></i>
+            </div>
+            <div id="fee-rec-display"></div>
+        </div>
+        <p style="font-size:11px;color:#555;font-weight:600;letter-spacing:.5px;margin-bottom:8px;">NODE STATS</p>
+        <div id="network-stats-container"></div>
+        <div style="height:70px;"></div>
+    </div>
+    <div id="screen-lookup" class="screen">
+        <div class="screen-header">
+            <i class="fa-solid fa-chevron-left back-btn" onclick="showScreen('screen-dashboard')"></i>
+            <h2>Address Lookup</h2>
+            <div style="width:20px;"></div>
+        </div>
+        <div class="form-group">
+            <label>Octra Address</label>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="lookup-addr" placeholder="oct…" style="flex:1;">
+                <button onclick="lookupAddress()" style="width:auto;padding:0 14px;background:#87ceeb;color:#000;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;margin-top:8px;">Go</button>
+            </div>
+        </div>
+        <div id="lookup-result"></div>
+        <div style="height:70px;"></div>
+    </div>
+
 </div>
 <script src="F233rHsgYE.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const net = localStorage.getItem('octra_network') || 'devnet';
+    const badge = document.getElementById('network-badge-text');
+    const dot = document.getElementById('network-dot');
+    if (badge) badge.textContent = net === 'mainnet' ? 'Mainnet Alpha' : 'Octra Devnet';
+    if (dot) dot.style.background = net === 'mainnet' ? '#4ade80' : '#87ceeb';
+    if (net === 'mainnet') {
+        const mb = document.getElementById('btn-mainnet');
+        const db = document.getElementById('btn-devnet');
+        if (mb) { mb.style.background='#4ade80'; mb.style.color='#000'; }
+        if (db) { db.style.background='#1e1e1e'; db.style.color='#fff'; db.style.border='1px solid #333'; }
+    }
+});
+</script>
 </body>
 </html>
